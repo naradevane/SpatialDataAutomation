@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="view-transition" content="same-origin">
+  <title>AutoCAD LISP Scripts - KMZ EMR Standard</title>
+  
+  <link rel="stylesheet" href="../transitions.css">
+  <link rel="icon" type="image/svg+xml" sizes="64x64" href="../kmz-emr-standard/assets/favicon.svg">
+  <link rel="stylesheet" href="../style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+        
+<body>
+
+  <a href="../index.html" style="position: absolute; top: 24px; left: 32px; text-decoration: none; color: hsl(var(--muted-foreground)); font-size: 14px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; z-index: 100;" onmouseover="this.style.color='hsl(var(--primary))'" onmouseout="this.style.color='hsl(var(--muted-foreground))'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"></line>
+      <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    Back to Portfolio
+  </a>
+
+  <div style="padding: 120px 24px 64px; text-align: center;">
+    <h1 style="font-size: 3rem; margin-bottom: 16px;">LISP Automations</h1>
+    <p style="color: hsl(var(--muted-foreground)); max-width: 600px; margin: 0 auto; line-height: 1.6;">A collection of custom AutoCAD routines to eliminate repetitive drafting tasks. Download the scripts and load them directly into your CAD environment via the <code>APPLOAD</code> command.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 800px; margin: 0 auto; padding-bottom: 128px;">
+    
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">BF2T.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Otomatisasi pairing Block References dengan Text terdekat secara akurat.</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/Pairing_Block_to Text_(BF2T).lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">NB.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Node Bridge: Mengubah kumpulan region/garis terpisah menjadi Polygon tunggal (Unified).</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/NodeBridge_(NB).lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">RQv2.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Rename Queue: Mengganti nama (rename) teks atau objek secara massal dan berurutan.</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/Rename_Queue_(RQ)v2.lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">AddTextAbove4.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Menambahkan teks anotasi secara presisi pada posisi tertentu di atas objek/garis.</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/AddTextAbove4.lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">S3-Sum_Numbers.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Kalkulator otomatis: Menjumlahkan nilai angka dari sekumpulan teks yang di-select.</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/S3-Sum_Numbers_Autocad.lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">ShrinkPoly.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Otomatisasi pengecilan dimensi (offset inward) pada objek Polygon dengan cepat.</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/ShrinkPoly.lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">SPMAuto.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Script utilitas untuk memproses dan mengeksekusi standardisasi objek secara otomatis.</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/SPMAuto.lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+    <div style="background-color: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 24px;">
+      <div style="flex: 1;">
+        <h3 style="margin-bottom: 4px; font-size: 1.1rem;">T2M_Enhanced.lsp</h3>
+        <p style="margin-bottom: 0; font-size: 0.9rem; color: hsl(var(--muted-foreground));">Konversi objek DText (teks biasa) menjadi MText (Multiline) tanpa merusak format asal.</p>
+      </div>
+      <a href="../kmz-emr-standard/assets/lisp/T2M_Enhanced_Text_to_MText.lsp" download class="btn btn-primary" style="padding: 10px; border-radius: 8px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </a>
+    </div>
+
+  </div>
+
+</body>
+</html>

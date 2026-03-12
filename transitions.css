@@ -1,0 +1,16 @@
+/* --- MAC-STYLE 4-FINGER SWIPE TRANSITION --- */
+@view-transition { navigation: auto; }
+
+@keyframes swipe-out {
+    to { transform: translateX(-100%); }
+}
+@keyframes swipe-in {
+    from { transform: translateX(100%); }
+}
+
+::view-transition-old(root) {
+    animation: 0.4s cubic-bezier(0.25, 1, 0.5, 1) both swipe-out;
+}
+::view-transition-new(root) {
+    animation: 0.4s cubic-bezier(0.25, 1, 0.5, 1) both swipe-in;
+}
