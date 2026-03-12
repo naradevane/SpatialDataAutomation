@@ -38,7 +38,7 @@ if (track && container) {
  // --- TAMBAHAN: INJECT EASTER EGG DI UJUNG TRACK ---
   const easterEggHTML = `
     <div class="tool-card fade-in-scroll" style="scroll-snap-align: center !important; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; border: none; background-color: black; overflow: hidden; cursor: default;">
-      <img src="Whoops.jpg" alt="Smug Spongebob" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.35; z-index: 1; border-radius: inherit;">
+      <img src="assets/Whoops.jpg" alt="Smug Spongebob" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.35; z-index: 1; border-radius: inherit;">
       <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px;">
         <h3 style="margin: 0; font-size: 1.1rem; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">You like scrolling, don't you?</h3>
         <p style="margin: 0; font-size: 0.9rem; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Whoops! Currently we only have 4 tools built. Another web apps are still cooking in the lab. Stay tuned!</p>
