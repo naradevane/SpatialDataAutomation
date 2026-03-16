@@ -32,25 +32,44 @@ let CURRENT_MODE = 'cluster';
 let kmzFile = null;
 
 // --- SETUP UI & EVENT LISTENERS ---
+    const setupUI = () => {
+    // Cari container utamanya yang tadi kita kasih ID
+    const container = document.getElementById('checkboxContainer');
+    if (!container) return; 
 
-const setupUI = () => {
-    const wrapper = document.querySelector('.checkbox-wrapper');
-    if (wrapper && !document.getElementById('smartRouteCheck')) {
-        const parent = wrapper.parentElement;
-        
-        // 1. Inject Smart Routing Checkbox
+    // --- URUTAN 1: HP BOUNDARY (Tadi di-hardcode, sekarang di-inject) ---
+    if (!document.getElementById('hpBoundaryWrapper')) {
+        const divHpBoundary = document.createElement('div');
+        divHpBoundary.id = 'hpBoundaryWrapper';
+        divHpBoundary.className = 'checkbox-wrapper';
+        divHpBoundary.title = "Uncheck/Matikan fitur ini jika KML lama menggunakan Polygon FAT yang belum diberi nama (Unnamed)";
+        divHpBoundary.innerHTML = `<input type="checkbox" id="hpBoundaryCheck" checked><label for="hpBoundaryCheck">Assign HP by Boundary FAT</label>`;
+        container.appendChild(divHpBoundary);
+    }
+
+    // --- URUTAN 2: AUTO SLACK 400M (KHUSUS SUBFEEDER) ---
+    if (!document.getElementById('autoSlackWrapper')) {
+        const divAutoSlack = document.createElement('div');
+        divAutoSlack.id = 'autoSlackWrapper';
+        divAutoSlack.className = 'checkbox-wrapper hidden'; // Default sembunyi
+        divAutoSlack.innerHTML = `<input type="checkbox" id="toggleAutoSlack400mCheck"><label for="toggleAutoSlack400mCheck">Auto Slack Tiap 400m (Subfeeder)</label>`;
+        container.appendChild(divAutoSlack);
+    }
+
+    // --- URUTAN 3: SMART ROUTING ---
+    if (!document.getElementById('smartRouteCheck')) {
         const divSmart = document.createElement('div');
         divSmart.className = 'checkbox-wrapper';
-        divSmart.style.marginTop = '0.5rem';
-        divSmart.innerHTML = `<input type="checkbox" id="smartRouteCheck"><label for="smartRouteCheck">Rapikan Jalur Kabel (Smart Routing)</label>`;
-        parent.appendChild(divSmart);
+        divSmart.innerHTML = `<input type="checkbox" id="smartRouteCheck"><label for="smartRouteCheck">Smart Cable Routing (Auto-Offset)</label>`;
+        container.appendChild(divSmart);
+    }
 
-        // 2. Inject Auto Correct Folder Checkbox (INI YANG KEMARIN KURANG)
+    // --- URUTAN 4: AUTO CORRECT FOLDERING ---
+    if (!document.getElementById('toggleAutoCorrectCheck')) {
         const divAutoCorrect = document.createElement('div');
         divAutoCorrect.className = 'checkbox-wrapper';
-        divAutoCorrect.style.marginTop = '0.5rem';
         divAutoCorrect.innerHTML = `<input type="checkbox" id="toggleAutoCorrectCheck" checked><label for="toggleAutoCorrectCheck">Auto Correct Foldering (Pole/FAT)</label>`;
-        parent.appendChild(divAutoCorrect);
+        container.appendChild(divAutoCorrect);
     }
 };
 
@@ -73,14 +92,16 @@ window.setMode = (mode) => {
     const btn = document.getElementById(`btn-${mode}`);
     if (btn) btn.classList.add('active');
 
-    // --- LOGIC ANIMASI HIDE/SHOW TOGGLE HP BOUNDARY ---
+    // --- LOGIC ANIMASI HIDE/SHOW TOGGLE ---
     const hpBoundaryWrapper = document.getElementById('hpBoundaryWrapper');
-    if (hpBoundaryWrapper) {
-        if (mode === 'cluster') {
-            hpBoundaryWrapper.classList.remove('hidden'); // Muncul pake animasi
-        } else {
-            hpBoundaryWrapper.classList.add('hidden'); // Ngilang pake animasi
-        }
+    const autoSlackWrapper = document.getElementById('autoSlackWrapper');
+
+    if (mode === 'cluster') {
+        if (hpBoundaryWrapper) hpBoundaryWrapper.classList.remove('hidden'); 
+        if (autoSlackWrapper) autoSlackWrapper.classList.add('hidden'); 
+    } else {
+        if (hpBoundaryWrapper) hpBoundaryWrapper.classList.add('hidden'); 
+        if (autoSlackWrapper) autoSlackWrapper.classList.remove('hidden'); 
     }
 };
 
@@ -403,19 +424,22 @@ processBtn.addEventListener('click', async () => {
         const doSmartRoute = document.getElementById('smartRouteCheck')?.checked || false;
         const usePolygonMaster = document.getElementById('hpBoundaryCheck')?.checked ?? true;
         const enableAutoCorrectFolder = document.getElementById('toggleAutoCorrectCheck').checked;
+        // Tangkep value checkbox baru
+        const enableAutoSlack400m = document.getElementById('toggleAutoSlack400mCheck')?.checked || false;
 
-let rootName = 'PROCESSED';
+        let rootName = 'PROCESSED';
         if (CURRENT_MODE === 'subfeeder') {
             restructureSubfeeder(xmlDoc); 
             autoRepositionPoints(xmlDoc, CURRENT_MODE);
             if (doSmartRoute) {
                 processSmartRouting(xmlDoc, CURRENT_MODE);
             }
-            generateAutoSlackSubfeeder(xmlDoc);
+            // Passing value-nya ke sini
+            generateAutoSlackSubfeeder(xmlDoc, enableAutoSlack400m);
             applyStyles(xmlDoc, 'subfeeder');
             injectDescriptionsAndCalc(xmlDoc, 'subfeeder', doCalc);
-            } else {
-            // CLUSTER LOGIC
+        } else {
+
             // CLUSTER LOGIC
             const res = restructureKML(xmlDoc);
             rootName = res.rootName;

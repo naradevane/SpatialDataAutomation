@@ -706,7 +706,7 @@ export function generateAutoSlack(xmlDoc) {
     });
 }
 
-export function generateAutoSlackSubfeeder(xmlDoc) {
+export function generateAutoSlackSubfeeder(xmlDoc, enableAuto400m = false) {
     const INTERVAL_SLACK = 400; // Taruh slack tiap 400 meter
     const MIN_DIST_TO_END = 20; // Jarak aman ke ujung biar ga dobel
     const CABLE_DETECT_TOLERANCE = 15; // Toleransi radius deteksi
@@ -753,6 +753,9 @@ export function generateAutoSlackSubfeeder(xmlDoc) {
             const placedSlacks = [];
             const anchorPoints = [];
 
+            // =======================================================
+            // BAGIAN INI ALWAYS ON: Taro slack di Anchor (FDT & JC)
+            // =======================================================
             [jcFolder, fdtFolder].forEach(targetFolder => {
                 if (targetFolder) {
                     targetFolder.querySelectorAll('Placemark').forEach(pm => {
@@ -795,7 +798,10 @@ export function generateAutoSlackSubfeeder(xmlDoc) {
                 }
             });
 
-            if (cableFolder) {
+            // =======================================================
+            // BAGIAN INI TOGGLEABLE: Taro slack tiap 400m
+            // =======================================================
+            if (enableAuto400m && cableFolder) {
                 cableFolder.querySelectorAll('Placemark').forEach(cablePm => {
                     const ls = cablePm.querySelector('LineString coordinates');
                     if (!ls) return;
