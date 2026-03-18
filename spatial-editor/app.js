@@ -13,8 +13,12 @@ let lightLayer;
 document.addEventListener('DOMContentLoaded', () => {
     map = L.map('map').setView([-7.250445, 112.768845], 11); // Surabaya default
 
-    // Set layer map ke OpenStreetMap (Light)
-    lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
+    // Set layer map ke Google Maps Satellite
+    lightLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { 
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '&copy; Google Maps' 
+    });
 
     // Set default ke light
     lightLayer.addTo(map);

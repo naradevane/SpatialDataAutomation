@@ -1550,7 +1550,7 @@ export function generateSummaryTable(xmlDoc) {
 export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
     if (!enableAutoCorrect || mode !== 'cluster') return;
 
-    const TOLERANCE = 2; // Radius 2 meter
+    const TOLERANCE = 2; 
     const placemarks = Array.from(xmlDoc.querySelectorAll('Placemark'));
 
     const getParentLineFolder = (node) => {
@@ -1588,7 +1588,7 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
 
     const allFolders = Array.from(xmlDoc.querySelectorAll('Folder'));
 
-    // --- PHASE 1: KUMPULIN ANCHOR (DIST CABLE) & SLING WIRE ---
+    // --- PHASE 1 & 2: SETUP ---
     const distCables = [];
     const slingWires = [];
 
@@ -1598,12 +1598,10 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
             const pLine = getParentLineFolder(pm);
             if (pLine) distCables.push({ element: pm, coords: getLineCoords(pm), parentLine: pLine });
         } else if (folderName === 'SLING WIRE') {
-            // Sling wire status awal "kosong", biar dia ngikutin arus jaringan
             slingWires.push({ element: pm, coords: getLineCoords(pm), parentLine: null });
         }
     });
 
-    // --- PHASE 2: KUMPULIN TITIK NODE (POLE & FAT) ---
     const nodes = [];
     placemarks.forEach(pm => {
         const name = (pm.querySelector('name')?.textContent || '').toUpperCase().trim();
@@ -1616,22 +1614,34 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
             const ptEl = pm.querySelector('Point coordinates');
             if (!ptEl) return;
             const [lon, lat] = ptEl.textContent.trim().split(',').map(Number);
+            
             nodes.push({
                 element: pm, name, folderName, isPole, isFat, pt: { lon, lat },
                 currentParentLine: getParentLineFolder(pm),
-                numericId: isPole ? extractId(name) : null, // FIX: ID angka mutlak cuma buat Pole!
-                resolvedLine: null, // Tempat folder akhir yang benar
+                numericId: isPole ? extractId(name) : null,
+                resolvedLine: null,
                 touchingDist: [],
-                touchingSling: []
+                touchingSling: [],
+                nearestDistCable: null,
+                nearestDistValue: Infinity
             });
         }
     });
 
-    // --- PHASE 3: MAPPING SENTUHAN FISIK ---
+    // --- PHASE 3: SPASIAL MAPPING ---
     nodes.forEach(node => {
+        let nearestDist = Infinity;
+        let nearestCable = null;
+
         distCables.forEach(dist => {
-            if (checkPointToLineDistance(node.pt, dist.coords) <= TOLERANCE) node.touchingDist.push(dist);
+            const d = checkPointToLineDistance(node.pt, dist.coords);
+            if (d <= TOLERANCE) node.touchingDist.push(dist);
+            if (d < nearestDist) { nearestDist = d; nearestCable = dist; }
         });
+
+        node.nearestDistCable = nearestCable;
+        node.nearestDistValue = nearestDist;
+
         slingWires.forEach(sling => {
             if (checkPointToLineDistance(node.pt, sling.coords) <= TOLERANCE) node.touchingSling.push(sling);
         });
@@ -1640,12 +1650,10 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
     const undisputedPoleRanges = {}; 
     const lineNameToFolder = {}; 
 
-    // --- PHASE 4: ASSIGN NODE YANG LANGSUNG NEMPEL KABEL UTAMA ---
+    // --- PHASE 4: ANCHOR SPASIAL (< 2m) ---
     nodes.forEach(node => {
         if (node.touchingDist.length > 0) {
             let chosenDist = node.touchingDist[0];
-            
-            // Kalau nempel persimpangan 2 kabel utama, akalin pakai inisial FAT buat nentuin
             if (node.touchingDist.length > 1 && node.isFat) {
                 const match = node.name.match(/\b([A-Z])\d{1,3}\b/i) || node.name.match(/^[A-Z]/i);
                 if (match) {
@@ -1654,12 +1662,10 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
                     if (found) chosenDist = found;
                 }
             }
-            
             node.resolvedLine = chosenDist.parentLine;
             const lnName = node.resolvedLine.querySelector('name').textContent.trim().toUpperCase();
             lineNameToFolder[lnName] = node.resolvedLine;
             
-            // Daftarin ID Pole ke kekuasaan Line tersebut
             if (node.isPole && node.numericId !== null) {
                 if (!undisputedPoleRanges[lnName]) undisputedPoleRanges[lnName] = new Set();
                 undisputedPoleRanges[lnName].add(node.numericId);
@@ -1667,36 +1673,24 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
         }
     });
 
-    // --- PHASE 5: PENYEBARAN BERANTAI (FLOOD FILL NETWORK) ---
-    // Menjalar dari Tiang yang sah -> Sling Wire -> Tiang Ujung
-    let changed = true;
-    let iters = 0;
-    while (changed && iters < 50) { // Limit muter 50 kali biar gak infinite loop
-        changed = false;
-        iters++;
-
-        // A. Tiang nyetrum Sling Wire
+    // --- PHASE 5: SLING WIRE SPREAD ---
+    let changed = true; let iters = 0;
+    while (changed && iters < 50) { 
+        changed = false; iters++;
         nodes.forEach(node => {
             if (node.resolvedLine) {
                 node.touchingSling.forEach(sling => {
-                    if (!sling.parentLine) {
-                        sling.parentLine = node.resolvedLine; 
-                        changed = true;
-                    }
+                    if (!sling.parentLine) { sling.parentLine = node.resolvedLine; changed = true; }
                 });
             }
         });
-
-        // B. Sling Wire nyetrum Tiang selanjutnya
         nodes.forEach(node => {
             if (!node.resolvedLine && node.touchingSling.some(s => s.parentLine)) {
                 const resolvedSling = node.touchingSling.find(s => s.parentLine);
                 node.resolvedLine = resolvedSling.parentLine;
                 changed = true;
-
                 const lnName = node.resolvedLine.querySelector('name').textContent.trim().toUpperCase();
                 lineNameToFolder[lnName] = node.resolvedLine;
-                
                 if (node.isPole && node.numericId !== null) {
                     if (!undisputedPoleRanges[lnName]) undisputedPoleRanges[lnName] = new Set();
                     undisputedPoleRanges[lnName].add(node.numericId);
@@ -1705,32 +1699,52 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
         });
     }
 
-    // --- PHASE 6: RESCUE MISSION (UNTUK PULAU TERISOLASI) ---
-    // Tiang nyambung ga jelas/putus total, dicari pakai urutan ID tetangganya secara berantai
-    changed = true;
-    iters = 0;
-    while (changed && iters < 10) {
-        changed = false;
-        iters++;
+    // --- PHASE 6: RESCUE MISSION MELAYANG ---
+    changed = true; iters = 0;
+    while (changed && iters < 20) {
+        changed = false; iters++;
         nodes.forEach(node => {
             if (!node.resolvedLine && node.isPole && node.numericId !== null) {
-                const prevId = node.numericId - 1;
-                const nextId = node.numericId + 1;
-                for (const [lnName, idSet] of Object.entries(undisputedPoleRanges)) {
-                    if (idSet.has(prevId) || idSet.has(nextId)) {
-                        node.resolvedLine = lineNameToFolder[lnName] || allFolders.find(f => f.querySelector('name')?.textContent.trim().toUpperCase() === lnName);
-                        if (node.resolvedLine) {
-                            idSet.add(node.numericId);
-                            changed = true;
-                            break;
+                let lineFromPrev = null; let lineFromNext = null;
+                for (let step = 1; step <= 3; step++) {
+                    const prevId = node.numericId - step;
+                    if (!lineFromPrev) {
+                        for (const [lnName, idSet] of Object.entries(undisputedPoleRanges)) {
+                            if (idSet.has(prevId)) lineFromPrev = lnName;
                         }
+                    }
+                }
+                for (let step = 1; step <= 3; step++) {
+                    const nextId = node.numericId + step;
+                    if (!lineFromNext) {
+                        for (const [lnName, idSet] of Object.entries(undisputedPoleRanges)) {
+                            if (idSet.has(nextId)) lineFromNext = lnName;
+                        }
+                    }
+                }
+
+                let chosenLineName = null;
+                if (lineFromPrev && lineFromNext) {
+                    chosenLineName = (lineFromPrev === lineFromNext) ? lineFromPrev : ((node.nearestDistCable && node.nearestDistValue <= 30) ? node.nearestDistCable.parentLine.querySelector('name').textContent.trim().toUpperCase() : lineFromPrev);
+                } else if (lineFromPrev) { chosenLineName = lineFromPrev; } 
+                else if (lineFromNext) { chosenLineName = lineFromNext; } 
+                else {
+                    if (node.nearestDistCable && node.nearestDistValue <= 30) chosenLineName = node.nearestDistCable.parentLine.querySelector('name').textContent.trim().toUpperCase();
+                }
+
+                if (chosenLineName) {
+                    node.resolvedLine = lineNameToFolder[chosenLineName] || allFolders.find(f => f.querySelector('name')?.textContent.trim().toUpperCase() === chosenLineName);
+                    if (node.resolvedLine) {
+                        if (!undisputedPoleRanges[chosenLineName]) undisputedPoleRanges[chosenLineName] = new Set();
+                        undisputedPoleRanges[chosenLineName].add(node.numericId);
+                        changed = true;
                     }
                 }
             }
         });
     }
 
-    // --- PHASE 7: FAT HEURISTIC (UNTUK FAT MELAYANG BEBAS) ---
+    // --- PHASE 7: FAT HEURISTIC ---
     nodes.forEach(node => {
         if (!node.resolvedLine && node.isFat) {
             const match = node.name.match(/\b([A-Z])\d{1,3}\b/i) || node.name.match(/^[A-Z]/i);
@@ -1741,6 +1755,55 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
             }
         }
     });
+
+    // =========================================================================
+    // --- PHASE 7.5: SEQUENCE AUDITOR (THE SANDWICH RULE) ---
+    // Menganulir hasil Phase 4 jika urutan ID tiang tidak sinkron.
+    // =========================================================================
+    const poleFinalStatus = {};
+    nodes.forEach(n => {
+        if (n.isPole && n.numericId !== null && n.resolvedLine) {
+            poleFinalStatus[n.numericId] = n.resolvedLine.querySelector('name').textContent.trim().toUpperCase();
+        }
+    });
+
+    let auditChanged = true;
+    let auditIters = 0;
+    while (auditChanged && auditIters < 10) {
+        auditChanged = false;
+        auditIters++;
+
+        nodes.forEach(node => {
+            if (node.isPole && node.numericId !== null) {
+                const currentLine = poleFinalStatus[node.numericId];
+                
+                // Cek maks 3 tiang ke belakang
+                let prevLine = null;
+                for(let i=1; i<=3; i++) {
+                    if(poleFinalStatus[node.numericId - i]) { prevLine = poleFinalStatus[node.numericId - i]; break; }
+                }
+                
+                // Cek maks 3 tiang ke depan
+                let nextLine = null;
+                for(let i=1; i<=3; i++) {
+                    if(poleFinalStatus[node.numericId + i]) { nextLine = poleFinalStatus[node.numericId + i]; break; }
+                }
+
+                // JIKA DIAPIT LINE YANG SAMA, TAPI DIA BEDA SENDIRI -> ANULIR!
+                if (prevLine && nextLine && prevLine === nextLine && currentLine !== prevLine) {
+                    const targetFolder = lineNameToFolder[prevLine] || allFolders.find(f => f.querySelector('name')?.textContent.trim().toUpperCase() === prevLine);
+                    if (targetFolder) {
+                        node.resolvedLine = targetFolder;
+                        poleFinalStatus[node.numericId] = prevLine; // Update tracker
+                        auditChanged = true;
+                        
+                        // Notif khusus buat pamer kalau sistem berhasil nangkep anomali
+                        globalErrorLog.push(`🚨 [Audit ID] Pole "${node.name}" dianulir! Dikembalikan ke ${prevLine} (mengikuti P${node.numericId-1} & P${node.numericId+1}).`);
+                    }
+                }
+            }
+        });
+    }
 
     // --- PHASE 8: EKSEKUSI PEMINDAHAN (POLE & FAT) ---
     nodes.forEach(node => {
@@ -1756,7 +1819,11 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
                 targetLine.appendChild(subFolder);
             }
             subFolder.appendChild(node.element);
-            globalErrorLog.push(`🔄 [Auto-Urut] ${node.isPole ? 'Pole' : 'FAT'} "${node.name}" dipindah ke ${targetLine.querySelector('name').textContent}.`);
+            
+            // Log dipisah, biar ga dobel notif kalau dia kena Audit Phase 7.5
+            if (!globalErrorLog.some(log => log.includes(`[Audit ID] Pole "${node.name}"`))) {
+                globalErrorLog.push(`🔄 [Auto-Urut] ${node.isPole ? 'Pole' : 'FAT'} "${node.name}" dipindah ke ${targetLine.querySelector('name').textContent}.`);
+            }
         } else if (!targetLine) {
             globalErrorLog.push(`⚠️ [Spasial] ${node.isPole ? 'Pole' : 'FAT'} "${node.name}" gagal dialokasikan ke Line manapun. Coba cek koordinat.`);
         }
@@ -1764,7 +1831,6 @@ export function autoCorrectHierarchy(xmlDoc, mode, enableAutoCorrect = true) {
 
     // --- PHASE 9: EKSEKUSI PEMINDAHAN SLING WIRE ---
     slingWires.forEach(sling => {
-        // Fallback terakhir: kalau masih ada Sling melayang yang gagal nyetrum, paksa masuk dari tiang terdekat
         if (!sling.parentLine) {
             let nearestNode = null; let minD = Infinity;
             nodes.forEach(n => {
